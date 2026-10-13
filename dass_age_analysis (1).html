@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>年齡與憂鬱、焦慮、壓力的關係</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --panel: #ffffff;
+    --ink: #1d2733;
+    --muted: #5d6877;
+    --line: #dde1e7;
+    --accent: #1f4e79;
+    --dep: #2b5fa8;
+    --anx: #d4761f;
+    --str: #2f8f6a;
+    --focus: #1f4e79;
+    font-size: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12171d; --panel: #1b222b; --ink: #e8ecf1; --muted: #a2adbb; --line: #2c3541;
+      --accent: #8db8e6; --dep: #6fa0e6; --anx: #f0a04f; --str: #5cc79c; --focus: #8db8e6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12171d; --panel: #1b222b; --ink: #e8ecf1; --muted: #a2adbb; --line: #2c3541;
+      --accent: #8db8e6; --dep: #6fa0e6; --anx: #f0a04f; --str: #5cc79c; --focus: #8db8e6;
+  }
+  :root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  html { background: var(--bg); }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100%;
+    font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "Heiti TC", system-ui, sans-serif;
+    line-height: 1.7;
+  }
+  main { max-width: 960px; margin: 0 auto; padding: 40px 20px 64px; }
+  h1 { font-size: 1.9rem; line-height: 1.3; margin: 0 0 10px; letter-spacing: .02em; }
+  .lead { margin: 0 0 28px; color: var(--muted); max-width: 46em; }
+  .source { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: -12px 0 18px; font-size: .88rem; color: var(--muted); }
+  .source[data-kind="ok"] { color: var(--str); }
+  .source[data-kind="warn"] { color: var(--anx); }
+  .src-btn { font: inherit; font-size: .85rem; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 3px 12px; cursor: pointer; }
+  .src-btn:hover:not(:disabled) { border-color: var(--accent); }
+  .src-btn:disabled { opacity: .55; cursor: default; }
+  .src-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .page-head h1 { flex: 1; }
+  .theme-btn {
+    flex: none; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+    font: inherit; font-size: .9rem; color: var(--ink); background: var(--panel);
+    border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; white-space: nowrap;
+  }
+  .theme-btn:hover { border-color: var(--accent); }
+  .theme-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .theme-btn .ico { font-size: 1.05rem; line-height: 1; }
+
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: center;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 14px 18px; margin-bottom: 16px;
+  }
+  .group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border: 0; margin: 0; padding: 0; }
+  .group legend { padding: 0; float: left; margin-right: 12px; color: var(--muted); font-size: .9rem; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .seg label { cursor: pointer; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg span { display: block; padding: 6px 16px; font-size: .95rem; }
+  .seg input:checked + span { background: var(--accent); color: #fff; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg input:checked + span { color: #12171d; } }
+  :root[data-theme="dark"] .seg input:checked + span { color: #12171d; }
+  .seg input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: -2px; }
+  .opt { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: .95rem; }
+  .opt input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  .opt input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .hint { font-size: .85rem; color: var(--muted); }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; margin-bottom: 20px; }
+  .panel h2 { font-size: 1.1rem; margin: 0 0 4px; }
+  .panel .sub { margin: 0 0 8px; color: var(--muted); font-size: .9rem; }
+  #chart { position: relative; }
+  #chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  svg .tick { fill: var(--muted); font-size: 12px; }
+  svg .axis-title { fill: var(--muted); font-size: 12px; }
+  svg .grid { stroke: var(--line); stroke-width: 1; }
+  svg .axis { stroke: var(--muted); stroke-width: 1; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 4px 0 0; font-size: .9rem; }
+  .legend i { display: inline-block; width: 22px; height: 0; border-top: 3px solid; vertical-align: middle; margin-right: 6px; }
+  .legend b { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: middle; margin-right: 6px; }
+
+  #tip {
+    position: fixed; z-index: 10; pointer-events: none; display: none;
+    background: #1d2733; color: #fff; padding: 8px 12px; border-radius: 6px;
+    font-size: .85rem; line-height: 1.5; box-shadow: 0 4px 14px rgba(0,0,0,.25); max-width: 260px;
+  }
+  .hit { cursor: pointer; }
+  .hit:focus { outline: none; }
+  .hit:focus-visible + .dot, .seg-r:focus-visible { stroke: var(--ink); stroke-width: 2.5; }
+
+  select { font: inherit; font-size: .95rem; padding: 6px 28px 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); }
+  select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .sort-btn { font: inherit; font-weight: 600; color: inherit; background: none; border: 0; padding: 2px 4px; cursor: pointer; border-radius: 4px; }
+  .sort-btn:hover { background: var(--line); }
+  .sort-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+  .sort-btn .arr { display: inline-block; width: 1em; color: var(--accent); }
+  .table-hint { margin: 8px 0 0; font-size: .85rem; color: var(--muted); }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; font-variant-numeric: tabular-nums; }
+  th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th:first-child, td:first-child, th.l, td.l { text-align: left; }
+  thead th { background: var(--bg); font-weight: 600; position: sticky; top: 0; }
+  tbody tr.sep td { border-top: 2px solid var(--line); }
+
+  .notes h2 { font-size: 1.05rem; margin: 0 0 8px; }
+  .notes ul { margin: 0; padding-left: 1.2em; }
+  .notes li { margin-bottom: 6px; }
+  .notes p { margin: 0 0 8px; }
+  [hidden] { display: none !important; }
+  @media (max-width: 600px) { h1 { font-size: 1.5rem; } main { padding: 24px 12px 48px; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="page-head">
+    <h1>年齡與憂鬱、焦慮、壓力的關係</h1>
+    <button type="button" class="theme-btn" id="theme-btn" aria-pressed="false"><span class="ico" aria-hidden="true">☾</span><span id="theme-label">深色模式</span></button>
+  </div>
+  <p class="lead">DASS-42 是自陳式量表，共 42 題，憂鬱、焦慮、壓力各 14 題；受試者回想過去一週的狀況，每題以 1（完全不符合）到 4（非常符合）作答，計分時每題減 1 換算為 0–3 分。把同一分量表的 14 題加總，即為 0–42 分的分量表總分，分數越高代表症狀越嚴重，並依總分分為正常、輕度、中度、重度、極重度五個等級。</p>
+
+  <div class="source" id="source" data-kind="loading" role="status">
+    <span id="source-text">正在從 Google Sheets 讀取最新資料…</span>
+    <button type="button" class="src-btn" id="reload-btn">重新載入資料</button>
+  </div>
+
+  <section class="controls" aria-label="圖表控制">
+    <fieldset class="group">
+      <legend>圖表</legend>
+      <div class="seg" role="radiogroup" aria-label="圖表切換">
+        <label><input type="radio" name="view" value="sev" checked><span>各年齡層嚴重度分布</span></label>
+        <label><input type="radio" name="view" value="mean"><span>年齡對各分量的平均數</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset class="group" id="ctl-mean">
+      <legend>分量表（可複選）</legend>
+      <label class="opt"><input type="checkbox" name="sc-multi" value="dep" checked><span class="swatch" style="background:var(--dep)"></span>憂鬱</label>
+      <label class="opt"><input type="checkbox" name="sc-multi" value="anx" checked><span class="swatch" style="background:var(--anx)"></span>焦慮</label>
+      <label class="opt"><input type="checkbox" name="sc-multi" value="str" checked><span class="swatch" style="background:var(--str)"></span>壓力</label>
+      <span class="hint">至少保留一個</span>
+    </fieldset>
+
+    <fieldset class="group" id="ctl-sev" hidden>
+      <legend><label for="sc-select">分量表（單選）</label></legend>
+      <select id="sc-select">
+        <option value="dep" selected>憂鬱</option>
+        <option value="anx">焦慮</option>
+        <option value="str">壓力</option>
+      </select>
+    </fieldset>
+  </section>
+
+  <section class="panel">
+    <h2 id="chart-title"></h2>
+    <p class="sub" id="chart-sub"></p>
+    <div id="chart"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <section class="panel">
+    <h2 id="table-title">統計表格</h2>
+    <div class="table-wrap"><table id="table"></table></div>
+    <p class="table-hint" id="table-hint" hidden>點選「正常」到「極重度」欄名，可依該等級百分比由高到低排序；再點一次由低到高，第三次恢復年齡順序。</p>
+  </section>
+
+  <section class="panel notes">
+    <h2>註解</h2>
+    <div id="notes"></div>
+  </section>
+</main>
+<div id="tip" role="tooltip"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- 資料來源 ---------- */
+  var SHEET_NAME = "年齡層分析";
+  // 以 <script> 方式載入 Google 試算表的 gviz 資料（不受 CORS 限制，本機 HTML 檔也能用）
+  // 未指定 gid，讀取該試算表的第一個分頁（內容為 IMPORTRANGE 匯入的「年齡層分析」）
+  var SHEET_ID = "1sVy9FsfqU_R6yENgenjcMSDIQbaSG0msj7pc_X4mPXY";
+  var SHEET_JSON_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:json";
+  var MERGE_FROM = 47; // 下限 ≥ 47 的年齡層合併成一組
+
+  var SC = {
+    dep: { name: "憂鬱", color: "var(--dep)" },
+    anx: { name: "焦慮", color: "var(--anx)" },
+    str: { name: "壓力", color: "var(--str)" }
+  };
+  var LEVELS = ["正常", "輕度", "中度", "重度", "極重度"];
+  var LEVEL_COLORS = ["#cfe3d6", "#f0dc9a", "#eaa95f", "#d2603f", "#8a2a2a"];
+  var LEVEL_TEXT = ["#1d2733", "#1d2733", "#1d2733", "#ffffff", "#ffffff"];
+  var Z = 1.96;
+
+  /* 內建備份資料：無法連線 Google Sheets 時使用 */
+  var FB_MEANS = [
+    ["7–16",  471,  25.59872611, 11.87731247, 20.64755839, 10.33476829, 25.43524416, 9.942363149],
+    ["17–26", 2862, 20.61740042, 11.85538595, 16.12823201, 9.794247127, 20.88120196, 10.14886761],
+    ["27–36", 555,  17.53873874, 12.28658371, 12.03243243, 9.440428482, 18.85045045, 10.77959258],
+    ["37–46", 170,  17.18235294, 12.97547688, 10.85294118, 9.347126739, 17.93529412, 10.65996443],
+    ["47–56", 75,   14.24,       12.19751858, 7.786666667, 8.039250559, 16.05333333, 10.62873888],
+    ["57–66", 32,   16.0625,     14.77997228, 9.5,         9.688703099, 15.5,        10.87168563],
+    ["67–76", 6,    13.33333333, 11.57007635, 5,           2.828427125, 12.83333333, 10.24532414],
+    ["77–86", 2,    20.5,        21.92031022, 11.5,        13.43502884, 16,          18.38477631]
+  ];
+  var FB_SEV = {
+    dep: [[62,18,74,82,235],[620,293,557,490,903],[187,52,106,66,145],[61,21,22,20,46],
+          [34,8,15,7,11],[18,1,2,2,9],[3,1,1,0,1],[1,0,0,0,1]],
+    anx: [[56,23,66,74,252],[642,211,553,454,1003],[228,47,106,60,115],[75,17,31,17,30],
+          [46,7,9,6,7],[17,2,4,2,7],[5,0,1,0,0],[1,0,0,0,1]],
+    str: [[77,43,95,140,116],[852,363,679,595,374],[213,77,111,89,66],[74,23,23,33,17],
+          [40,9,12,7,7],[18,3,6,2,3],[3,2,0,1,0],[1,0,0,1,0]]
+  };
+  function fallbackRows() {
+    return FB_MEANS.map(function (r, i) {
+      return {
+        label: r[0], lo: parseInt(r[0], 10), nMean: r[1],
+        m: { dep: [r[2], r[3]], anx: [r[4], r[5]], str: [r[6], r[7]] },
+        sev: { dep: FB_SEV.dep[i], anx: FB_SEV.anx[i], str: FB_SEV.str[i] }
+      };
+    });
+  }
+
+  /* ---------- 解析 Google Sheets 的 CSV ---------- */
+  function parseCSV(text) {
+    var rows = [], row = [], f = "", q = false, i, c;
+    for (i = 0; i < text.length; i++) {
+      c = text.charAt(i);
+      if (q) {
+        if (c === '"') { if (text.charAt(i + 1) === '"') { f += '"'; i++; } else q = false; }
+        else f += c;
+      } else if (c === '"') q = true;
+      else if (c === ",") { row.push(f); f = ""; }
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text.charAt(i + 1) === "\n") i++;
+        row.push(f); f = ""; rows.push(row); row = [];
+      } else f += c;
+    }
+    if (f !== "" || row.length) { row.push(f); rows.push(row); }
+    return rows;
+  }
+  function cell(r, i) { return (r && r[i] != null) ? String(r[i]).trim() : ""; }
+  function num(x) {
+    var t = String(x == null ? "" : x).replace(/[,%\s]/g, "");
+    return t === "" ? NaN : Number(t);
+  }
+
+  // 版面：第一區為「年齡層 / 下限 / 上限 / 人數 / 各分量平均與標準差」；
+  // 之後依序是「憂鬱等級…」「焦慮等級…」「壓力等級…」三個區塊（標題列＋各年齡層五個等級的人數）。
+  function parseSheet(text) { return parseSheetRows(parseCSV(text.replace(/^\ufeff/, ""))); }
+  function parseSheetRows(t) {
+    var i, k;
+    var h = -1;
+    for (i = 0; i < t.length; i++) { if (cell(t[i], 0) === "年齡層") { h = i; break; } }
+    if (h < 0) throw new Error("找不到「年齡層」標題列");
+    var head = t[h].map(function (x) { return String(x).trim(); });
+    function idx(name, def) { var j = head.indexOf(name); return j < 0 ? def : j; }
+    var C = { lo: idx("下限(含)", 1), n: idx("人數", 3),
+      dm: idx("憂鬱平均", 4), ds: idx("憂鬱標準差", 5),
+      am: idx("焦慮平均", 6), as: idx("焦慮標準差", 7),
+      sm: idx("壓力平均", 8), ss: idx("壓力標準差", 9) };
+
+    var means = [];
+    for (i = h + 1; i < t.length; i++) {
+      var lab = cell(t[i], 0);
+      if (!lab || !/^\d/.test(lab)) break;
+      var lo = num(cell(t[i], C.lo)); if (isNaN(lo)) lo = parseInt(lab, 10);
+      var n = num(cell(t[i], C.n)); if (isNaN(n)) n = 0;
+      means.push({ label: lab, lo: lo, nMean: n, m: {
+        dep: [num(cell(t[i], C.dm)), num(cell(t[i], C.ds))],
+        anx: [num(cell(t[i], C.am)), num(cell(t[i], C.as))],
+        str: [num(cell(t[i], C.sm)), num(cell(t[i], C.ss))] } });
+    }
+    if (!means.length) throw new Error("「年齡層」標題列下方沒有資料");
+
+    var anchors = { dep: "憂鬱等級", anx: "焦慮等級", str: "壓力等級" };
+    var sevMap = { dep: {}, anx: {}, str: {} };
+    Object.keys(anchors).forEach(function (key) {
+      var a = -1, r;
+      for (r = h + 1; r < t.length; r++) { if (cell(t[r], 0).indexOf(anchors[key]) === 0) { a = r; break; } }
+      if (a < 0) throw new Error("找不到「" + anchors[key] + "」區塊");
+      if (cell(t[a + 1], 0) !== "年齡層") throw new Error("「" + anchors[key] + "」區塊下一列不是標題列");
+      for (r = a + 2; r < t.length; r++) {
+        var l = cell(t[r], 0);
+        if (!l || !/^\d/.test(l)) break;
+        var c = [1, 2, 3, 4, 5].map(function (j) { return num(cell(t[r], j)); });
+        if (c.some(function (v) { return isNaN(v) || v < 0; })) throw new Error("「" + anchors[key] + "」區塊的「" + l + "」有非數字的人數");
+        sevMap[key][l] = c;
+      }
+    });
+
+    var rows = [];
+    means.forEach(function (r) {
+      var sev = { dep: sevMap.dep[r.label], anx: sevMap.anx[r.label], str: sevMap.str[r.label] };
+      var tot = sev.dep ? sev.dep.reduce(function (x, y) { return x + y; }, 0) : 0;
+      if (r.nMean === 0 && tot === 0) return; // 沒有人的年齡層（例如 87–96）不顯示
+      for (k in sev) { if (!sev[k]) throw new Error("嚴重度區塊缺少年齡層「" + r.label + "」（" + SC[k].name + "）"); }
+      if (r.nMean <= 0) throw new Error("年齡層「" + r.label + "」有嚴重度人數，但平均數表的人數為 0");
+      for (k in r.m) { if (isNaN(r.m[k][0]) || isNaN(r.m[k][1])) throw new Error("年齡層「" + r.label + "」的" + SC[k].name + "平均或標準差不是數字"); }
+      if (isNaN(r.lo)) throw new Error("年齡層「" + r.label + "」讀不到下限");
+      r.sev = sev; rows.push(r);
+    });
+    if (!rows.length) throw new Error("沒有任何有人數的年齡層");
+    rows.sort(function (x, y) { return x.lo - y.lo; });
+    return rows;
+  }
+
+  /* ---------- 整理成年齡組（≥47 歲合併） ---------- */
+  var sevTotal = function (r) { return r.reduce(function (a, b) { return a + b; }, 0); };
+  var GROUPS = [];
+
+  function pool(items) {
+    var N = 0, S = 0;
+    items.forEach(function (x) { N += x.n; S += x.n * x.mean; });
+    var M = S / N, SS = 0;
+    items.forEach(function (x) { SS += (x.n - 1) * x.sd * x.sd + x.n * Math.pow(x.mean - M, 2); });
+    return { mean: M, sd: Math.sqrt(SS / (N - 1)) };
+  }
+  function makeGroup(label, rs) {
+    var g = { label: label, src: rs.map(function (r) { return r.label; }) };
+    g.n = rs.reduce(function (a, r) { return a + sevTotal(r.sev.dep); }, 0); // 人數統一採用嚴重度表合計
+    g.nMean = rs.reduce(function (a, r) { return a + r.nMean; }, 0);
+    g.stat = {}; g.sev = {};
+    Object.keys(SC).forEach(function (k) {
+      var p;
+      if (rs.length === 1) p = { mean: rs[0].m[k][0], sd: rs[0].m[k][1] };
+      else p = pool(rs.map(function (r) { return { n: r.nMean, mean: r.m[k][0], sd: r.m[k][1] }; }));
+      var se = p.sd / Math.sqrt(g.n);
+      g.stat[k] = { mean: p.mean, sd: p.sd, se: se, lo: p.mean - Z * se, hi: p.mean + Z * se };
+      var c = [0, 0, 0, 0, 0];
+      rs.forEach(function (r) { for (var j = 0; j < 5; j++) c[j] += r.sev[k][j]; });
+      g.sev[k] = c;
+    });
+    return g;
+  }
+  function buildGroups(rows) {
+    GROUPS.length = 0;
+    rows.filter(function (r) { return r.lo < MERGE_FROM; }).forEach(function (r) { GROUPS.push(makeGroup(r.label, [r])); });
+    var merged = rows.filter(function (r) { return r.lo >= MERGE_FROM; });
+    if (merged.length) GROUPS.push(makeGroup(MERGE_FROM + "+", merged));
+  }
+  buildGroups(fallbackRows());
+
+  /* ---------- 工具 ---------- */
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function f2(x) { return x.toFixed(2); }
+  function pct(x) { return (x * 100).toFixed(1) + "%"; }
+  function fmtN(x) { return x.toLocaleString("en-US"); }
+
+  var tip = document.getElementById("tip");
+  function showTip(html, evt) {
+    tip.innerHTML = html; tip.style.display = "block";
+    var w = tip.offsetWidth, h = tip.offsetHeight;
+    var x = evt.clientX + 14, y = evt.clientY - h - 12;
+    if (x + w > window.innerWidth - 8) x = evt.clientX - w - 14;
+    if (y < 8) y = evt.clientY + 18;
+    tip.style.left = x + "px"; tip.style.top = y + "px";
+  }
+  function hideTip() { tip.style.display = "none"; }
+  function bindTip(node, html) {
+    node.addEventListener("mousemove", function (e) { showTip(html, e); });
+    node.addEventListener("mouseenter", function (e) { showTip(html, e); });
+    node.addEventListener("mouseleave", hideTip);
+    node.addEventListener("focus", function () {
+      var r = node.getBoundingClientRect();
+      showTip(html, { clientX: r.left + r.width / 2, clientY: r.top });
+    });
+    node.addEventListener("blur", hideTip);
+  }
+
+  /* ---------- 狀態 ---------- */
+  var chartEl = document.getElementById("chart");
+  var legendEl = document.getElementById("legend");
+  var ctlMean = document.getElementById("ctl-mean");
+  var ctlSev = document.getElementById("ctl-sev");
+
+  function getView() { return document.querySelector('input[name="view"]:checked').value; }
+  function getMulti() {
+    return Array.prototype.map.call(document.querySelectorAll('input[name="sc-multi"]:checked'), function (i) { return i.value; });
+  }
+  function getSingle() { return document.getElementById("sc-select").value; }
+
+  /* ---------- 圖一：折線圖 ---------- */
+  function drawLine(keys) {
+    chartEl.innerHTML = "";
+    var W = 860, H = 440, m = { t: 20, r: 24, b: 76, l: 56 };
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "年齡對各分量表平均數的折線圖" }, chartEl);
+    var y = function (v) { return m.t + ih - (v / 42) * ih; };
+    var x = function (i) { return m.l + iw * (i + 0.5) / GROUPS.length; };
+
+    for (var v = 0; v <= 42; v += 6) {
+      el("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), "class": v === 0 ? "axis" : "grid" }, svg);
+      var t = el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end", "class": "tick" }, svg); t.textContent = v;
+    }
+    var yt = el("text", { x: 14, y: m.t + ih / 2, "text-anchor": "middle", "class": "axis-title", transform: "rotate(-90 14 " + (m.t + ih / 2) + ")" }, svg);
+    yt.textContent = "分量表總分（0–42）";
+
+    GROUPS.forEach(function (grp, i) {
+      var a = el("text", { x: x(i), y: H - m.b + 22, "text-anchor": "middle", "class": "tick", style: "font-size:13px;fill:var(--ink)" }, svg);
+      a.textContent = grp.label;
+      var b = el("text", { x: x(i), y: H - m.b + 40, "text-anchor": "middle", "class": "tick" }, svg);
+      b.textContent = "（n=" + fmtN(grp.n) + "）";
+    });
+    var xt = el("text", { x: m.l + iw / 2, y: H - 8, "text-anchor": "middle", "class": "axis-title" }, svg);
+    xt.textContent = "年齡組（歲）";
+
+    keys.forEach(function (k, ki) {
+      var color = SC[k].color;
+      var dx = (ki - (keys.length - 1) / 2) * 12; // 同時顯示時左右錯開，避免誤差線重疊
+      var pts = GROUPS.map(function (g, i) { return [x(i) + dx, y(g.stat[k].mean)]; });
+      el("polyline", { points: pts.map(function (p) { return p.join(","); }).join(" "), fill: "none", stroke: color, "stroke-width": 2.5, "stroke-linejoin": "round" }, svg);
+      GROUPS.forEach(function (g, i) {
+        var s = g.stat[k], px = x(i) + dx;
+        var lo = Math.max(0, s.lo), hi = Math.min(42, s.hi);
+        el("line", { x1: px, x2: px, y1: y(lo), y2: y(hi), stroke: color, "stroke-width": 1.6 }, svg);
+        el("line", { x1: px - 5, x2: px + 5, y1: y(lo), y2: y(lo), stroke: color, "stroke-width": 1.6 }, svg);
+        el("line", { x1: px - 5, x2: px + 5, y1: y(hi), y2: y(hi), stroke: color, "stroke-width": 1.6 }, svg);
+        var hit = el("circle", { cx: px, cy: y(s.mean), r: 14, fill: "transparent", "class": "hit", tabindex: 0,
+          "aria-label": g.label + " " + SC[k].name + " 平均 " + f2(s.mean) + " 標準差 " + f2(s.sd) }, svg);
+        el("circle", { cx: px, cy: y(s.mean), r: 5, fill: "var(--panel)", stroke: color, "stroke-width": 2.5, "class": "dot", style: "pointer-events:none" }, svg);
+        bindTip(hit, "<b>" + SC[k].name + "</b>　" + g.label + "（n=" + fmtN(g.n) + "）<br>平均數：" + f2(s.mean) + "<br>標準差：" + f2(s.sd));
+      });
+    });
+
+    legendEl.innerHTML = keys.map(function (k) {
+      return '<span><i style="border-color:' + SC[k].color + '"></i>' + SC[k].name + "</span>";
+    }).join("") + '<span class="hint">垂直線為 95% 信賴區間（下限不低於 0、上限不高於 42 僅為繪圖截斷）</span>';
+  }
+
+  /* ---------- 圖二：橫向堆疊長條圖 ---------- */
+  function drawStack(k) {
+    chartEl.innerHTML = "";
+    var W = 860, H = 400, m = { t: 16, r: 24, b: 56, l: 130 };
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": SC[k].name + "嚴重度分布堆疊長條圖" }, chartEl);
+    var x = function (p) { return m.l + iw * p; };
+    var band = ih / GROUPS.length, bh = Math.min(44, band * 0.62);
+
+    for (var p = 0; p <= 100; p += 10) {
+      el("line", { x1: x(p / 100), x2: x(p / 100), y1: m.t, y2: m.t + ih, "class": p === 0 ? "axis" : "grid" }, svg);
+      var t = el("text", { x: x(p / 100), y: m.t + ih + 18, "text-anchor": "middle", "class": "tick" }, svg); t.textContent = p + "%";
+    }
+    var xt = el("text", { x: m.l + iw / 2, y: H - 8, "text-anchor": "middle", "class": "axis-title" }, svg);
+    xt.textContent = "各年齡組內的人數比例";
+
+    GROUPS.forEach(function (g, i) {
+      var cy = m.t + band * i + band / 2, top = cy - bh / 2;
+      var a = el("text", { x: m.l - 10, y: cy - 2, "text-anchor": "end", style: "font-size:13px" }, svg);
+      a.textContent = g.label;
+      var b = el("text", { x: m.l - 10, y: cy + 14, "text-anchor": "end", "class": "tick" }, svg);
+      b.textContent = "（n=" + fmtN(g.n) + "）";
+
+      var counts = g.sev[k], tot = sevTotal(counts), acc = 0;
+      counts.forEach(function (c, j) {
+        var share = c / tot;
+        if (c > 0) {
+          var r = el("rect", { x: x(acc), y: top, width: Math.max(0, iw * share), height: bh, fill: LEVEL_COLORS[j],
+            stroke: "var(--panel)", "stroke-width": 1, "class": "seg-r hit", tabindex: 0,
+            "aria-label": g.label + " " + LEVELS[j] + " " + pct(share) }, svg);
+          bindTip(r, "<b>" + LEVELS[j] + "</b>　" + g.label + "<br>" + pct(share) + "（" + fmtN(c) + " 人）");
+          if (share >= 0.07) {
+            var lt = el("text", { x: x(acc) + iw * share / 2, y: cy + 4, "text-anchor": "middle", style: "font-size:12px;pointer-events:none;fill:" + LEVEL_TEXT[j] }, svg);
+            lt.textContent = Math.round(share * 100) + "%";
+          }
+        }
+        acc += share;
+      });
+    });
+
+    legendEl.innerHTML = LEVELS.map(function (l, j) {
+      return '<span><b style="background:' + LEVEL_COLORS[j] + '"></b>' + l + "</span>";
+    }).join("");
+  }
+
+  /* ---------- 表格 ---------- */
+  function tableMean(keys) {
+    var h = "<thead><tr><th>年齡組</th><th>人數 n</th><th class='l'>分量表</th><th>平均數</th><th>標準差</th><th>標準誤</th><th>95% CI 下限</th><th>95% CI 上限</th></tr></thead><tbody>";
+    GROUPS.forEach(function (g, i) {
+      keys.forEach(function (k, ki) {
+        var s = g.stat[k];
+        h += "<tr" + (ki === 0 && i > 0 ? " class='sep'" : "") + ">" +
+          "<td>" + (ki === 0 ? g.label : "") + "</td><td>" + (ki === 0 ? fmtN(g.n) : "") + "</td>" +
+          "<td class='l'>" + SC[k].name + "</td><td>" + f2(s.mean) + "</td><td>" + f2(s.sd) + "</td><td>" + f2(s.se) + "</td><td>" + f2(s.lo) + "</td><td>" + f2(s.hi) + "</td></tr>";
+      });
+    });
+    document.getElementById("table").innerHTML = h + "</tbody>";
+    document.getElementById("table-title").textContent = "統計表格：" + keys.map(function (k) { return SC[k].name; }).join("、") + "（平均數與 95% 信賴區間）";
+  }
+  var sortState = { level: null, dir: "desc" }; // level: 0–4 或 null（原始年齡順序）
+  function tableSev(k) {
+    var rows = GROUPS.map(function (g) { return { g: g, c: g.sev[k], tot: sevTotal(g.sev[k]) }; });
+    if (sortState.level !== null) {
+      var L = sortState.level, sign = sortState.dir === "desc" ? -1 : 1;
+      rows = rows.slice().sort(function (a, b) { return sign * (a.c[L] / a.tot - b.c[L] / b.tot); });
+    }
+    var h = "<thead><tr><th>年齡組</th><th>人數 n</th>" + LEVELS.map(function (l, j) {
+      var on = sortState.level === j;
+      var arr = on ? (sortState.dir === "desc" ? "▼" : "▲") : "";
+      return "<th aria-sort='" + (on ? (sortState.dir === "desc" ? "descending" : "ascending") : "none") + "'>" +
+        "<button type='button' class='sort-btn' data-level='" + j + "' title='依「" + l + "」百分比排序'>" + l + "<span class='arr'>" + arr + "</span></button></th>";
+    }).join("") + "</tr></thead><tbody>";
+    rows.forEach(function (r) {
+      h += "<tr><td>" + r.g.label + "</td><td>" + fmtN(r.tot) + "</td>" + r.c.map(function (v) { return "<td>" + fmtN(v) + "（" + pct(v / r.tot) + "）</td>"; }).join("") + "</tr>";
+    });
+    document.getElementById("table").innerHTML = h + "</tbody>";
+    document.getElementById("table-title").textContent = "統計表格：" + SC[k].name + "嚴重度分布（人數與百分比）";
+    document.querySelectorAll(".sort-btn").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var j = +b.getAttribute("data-level");
+        if (sortState.level !== j) { sortState.level = j; sortState.dir = "desc"; }
+        else if (sortState.dir === "desc") { sortState.dir = "asc"; }
+        else { sortState.level = null; sortState.dir = "desc"; }
+        tableSev(k);
+        var nb = document.querySelector('.sort-btn[data-level="' + j + '"]'); if (nb) nb.focus();
+      });
+    });
+  }
+
+  /* ---------- 註解 ---------- */
+  var NOTES_MEAN =
+    "<ul>" +
+    "<li><b>平均數</b>：該年齡組在分量表（0–42 分）的平均得分，越高代表症狀越明顯。</li>" +
+    "<li><b>標準差（SD）</b>：個人分數的離散程度，描述的是「人與人之間差多少」，並非估計的誤差。</li>" +
+    "<li><b>標準誤（SE）與 95% 信賴區間</b>：SE = SD ÷ √n；信賴區間 = 平均數 ± 1.96 × SE，反映平均數的估計精確度。區間越寬代表該組樣本越少或個體差異越大。</li>" +
+    "<li>兩組的信賴區間有重疊，不代表兩組沒有差異，要判斷差異是否顯著需另做檢定（如變異數分析）。</li>" +
+    "</ul>";
+  var NOTES_SEV =
+    "<ul>" +
+    "<li><b>百分比</b>：各嚴重度等級人數占該年齡組人數的比例，每一條加總為 100%；括號內為人數。</li>" +
+    "<li>嚴重度等級依原始資料表的分類（正常、輕度、中度、重度、極重度）。</li>" +
+    "</ul>";
+  function notesCommon() {
+    var h = "<ul>";
+    var merged = GROUPS.filter(function (g) { return g.src.length > 1; })[0];
+    if (merged) {
+      h += "<li><b>" + merged.label + " 組</b>由 " + merged.src.join("、") + " 合併；平均數依各組人數加權，標準差以合併變異數公式重新計算。</li>";
+    }
+    var diff = GROUPS.filter(function (g) { return g.nMean !== g.n; });
+    h += "<li><b>樣本數</b>：各組人數統一採用嚴重度表的合計。";
+    if (diff.length) {
+      h += "平均數表的人數與其不同的組別：" + diff.map(function (g) { return g.label + "（平均數表 " + fmtN(g.nMean) + " 人，嚴重度表 " + fmtN(g.n) + " 人）"; }).join("、") +
+        "；平均數與標準差仍採用平均數表的數值，所以與以 n 計算的結果可能有極小的差異。";
+    } else { h += "兩張表的人數目前一致。"; }
+    h += "</li>";
+    var mn = GROUPS.reduce(function (a, g) { return g.n < a.n ? g : a; }, GROUPS[0]);
+    var mx = GROUPS.reduce(function (a, g) { return g.n > a.n ? g : a; }, GROUPS[0]);
+    h += "<li><b>小樣本</b>：各組人數差異很大（最少為 " + mn.label + " 的 " + fmtN(mn.n) + " 人，最多為 " + mx.label + " 的 " + fmtN(mx.n) + " 人）。人數少的組別，平均數與比例的估計較不穩定，解讀時需謹慎。</li>";
+    h += "<li><b>推論限制</b>：資料來自自願上網填答的樣本，並非隨機抽樣；且為橫斷資料，只能描述不同年齡組之間的差異，不能推論年齡增長「造成」症狀改變，也不宜直接推論到整體人口。</li>" +
+      "<li>信賴區間採常態近似（z = 1.96），在各組人數足夠時才適用。</li></ul>";
+    return h;
+  }
+
+  /* ---------- 更新 ---------- */
+  function render() {
+    hideTip();
+    var view = getView();
+    ctlMean.hidden = view !== "mean";
+    ctlSev.hidden = view !== "sev";
+    document.getElementById("table-hint").hidden = view !== "sev";
+    var notesEl = document.getElementById("notes");
+    if (view === "mean") {
+      var keys = getMulti();
+      document.getElementById("chart-title").textContent = "年齡對各分量的平均數";
+      document.getElementById("chart-sub").textContent = "點為平均數，垂直線為 95% 信賴區間；滑鼠移到點上可看平均數與標準差。";
+      drawLine(keys); tableMean(keys);
+      notesEl.innerHTML = NOTES_MEAN + notesCommon();
+    } else {
+      var k = getSingle();
+      document.getElementById("chart-title").textContent = "各年齡層嚴重度分布：" + SC[k].name;
+      document.getElementById("chart-sub").textContent = "每條代表一個年齡組；滑鼠移到區段上可看等級與百分比。";
+      drawStack(k); tableSev(k);
+      notesEl.innerHTML = NOTES_SEV + notesCommon();
+    }
+  }
+
+  document.querySelectorAll('input[name="view"], #sc-select').forEach(function (i) { i.addEventListener("change", render); });
+  document.querySelectorAll('input[name="sc-multi"]').forEach(function (i) {
+    i.addEventListener("change", function () {
+      if (getMulti().length === 0) i.checked = true; // 至少保留一個
+      render();
+    });
+  });
+  /* ---------- 深色模式 ---------- */
+  var root = document.documentElement;
+  var themeBtn = document.getElementById("theme-btn");
+  function systemDark() { return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches); }
+  function applyTheme(t, save) {
+    root.setAttribute("data-theme", t);
+    var dark = t === "dark";
+    themeBtn.setAttribute("aria-pressed", dark ? "true" : "false");
+    themeBtn.querySelector(".ico").textContent = dark ? "☀" : "☾";
+    document.getElementById("theme-label").textContent = dark ? "淺色模式" : "深色模式";
+    if (save) { try { localStorage.setItem("dass-theme", t); } catch (e) {} }
+  }
+  var saved = null;
+  try { saved = localStorage.getItem("dass-theme"); } catch (e) {}
+  applyTheme(saved === "dark" || saved === "light" ? saved : (systemDark() ? "dark" : "light"), false);
+  themeBtn.addEventListener("click", function () {
+    applyTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark", true);
+  });
+
+  /* ---------- 讀取 Google Sheets ---------- */
+  var statusEl = document.getElementById("source-text");
+  var reloadBtn = document.getElementById("reload-btn");
+  var liveLoaded = false;
+  function setStatus(kind, msg) {
+    statusEl.textContent = msg;
+    statusEl.parentNode.setAttribute("data-kind", kind);
+  }
+  function fmtTime(d) {
+    function p(x) { return (x < 10 ? "0" : "") + x; }
+    return d.getFullYear() + "/" + p(d.getMonth() + 1) + "/" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+  }
+  function tableToRows(tbl) {
+    var out = [(tbl.cols || []).map(function (c) { return (c && c.label) || ""; })];
+    (tbl.rows || []).forEach(function (r) {
+      out.push((r && r.c ? r.c : []).map(function (c) { return c && c.v != null ? String(c.v) : ""; }));
+    });
+    return out;
+  }
+  function fetchSheetRows() {
+    return new Promise(function (resolve, reject) {
+      var done = false, timer, s = document.createElement("script");
+      function finish(fn, arg) {
+        if (done) return;
+        done = true; clearTimeout(timer);
+        if (s.parentNode) s.parentNode.removeChild(s);
+        fn(arg);
+      }
+      window.google = window.google || {};
+      window.google.visualization = window.google.visualization || {};
+      window.google.visualization.Query = window.google.visualization.Query || {};
+      window.google.visualization.Query.setResponse = function (resp) {
+        if (!resp || resp.status !== "ok" || !resp.table) {
+          var e = resp && resp.errors && resp.errors[0];
+          finish(reject, new Error(e ? (e.detailed_message || e.message) : "試算表回傳錯誤"));
+        } else finish(resolve, tableToRows(resp.table));
+      };
+      s.onload = function () { finish(reject, new Error("Google 回傳的不是資料，試算表可能未設為「知道連結的人可檢視」")); };
+      s.onerror = function () { finish(reject, new Error("網路無法連線，或連線被瀏覽器／環境阻擋")); };
+      timer = setTimeout(function () { finish(reject, new Error("讀取逾時")); }, 15000);
+      s.src = SHEET_JSON_URL + "&_=" + Date.now();
+      document.head.appendChild(s);
+    });
+  }
+  function loadSheet() {
+    reloadBtn.disabled = true;
+    setStatus("loading", "正在從 Google Sheets 讀取最新資料…");
+    fetchSheetRows()
+      .then(function (t) {
+        var rows = parseSheetRows(t);
+        buildGroups(rows);
+        liveLoaded = true;
+        render();
+        setStatus("ok", "資料來源：Google Sheets（年齡層分析），已於 " + fmtTime(new Date()) + " 讀取最新資料。");
+      })
+      .catch(function (err) {
+        var msg = err && err.message ? err.message : String(err);
+        setStatus("warn", liveLoaded
+          ? "重新載入失敗（" + msg + "），仍顯示上次讀取的資料。"
+          : "無法讀取 Google Sheets（" + msg + "），目前顯示內建的備份資料，可能不是最新版本。");
+      })
+      .then(function () { reloadBtn.disabled = false; });
+  }
+  reloadBtn.addEventListener("click", loadSheet);
+
+  render();
+  loadSheet();
+})();
+</script>
+</body>
+</html>
